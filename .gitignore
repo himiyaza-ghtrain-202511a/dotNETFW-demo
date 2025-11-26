@@ -1,0 +1,52 @@
+## Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Build results
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+Debug/
+Release/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+
+## Test results
+[Tt]est[Rr]esults/
+*.trx
+*.coverage
+*.coveragexml
+
+## NuGet
+packages/
+*.nupkg
+# Keep project-specific packages.config files
+!**/packages.config
+
+## Resharper / Rider
+_ReSharper*/
+*.[Rr]e[Ss]harper
+.idea/
+
+## Azure
+PublishProfiles/
+
+## Others
+*.orig
+*.tmp
+*.bak
+*.swp
+*.psess
+*.vsp
+*.vspx
+
+## Generated files
+**/Generated*/**
+
+## IIS / web
+App_Data/

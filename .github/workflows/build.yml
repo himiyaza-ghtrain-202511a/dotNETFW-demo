@@ -1,0 +1,69 @@
+name: Build .NET Framework
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.3.2
+
+      - name: Restore packages (packages.config)
+        run: |
+          if (Test-Path "**/packages.config") {
+            Get-ChildItem -Path . -Recurse -Filter packages.config | ForEach-Object {
+              $projDir = $_.Directory.FullName
+              nuget restore "$projDir" -NonInteractive
+            }
+          } else {
+            Write-Host "No packages.config found. Skipping NuGet restore."
+          }
+        shell: pwsh
+
+      - name: Restore solution via MSBuild (if .sln exists)
+        run: |
+          $sln = Get-ChildItem -Path . -Recurse -Filter *.sln | Select-Object -First 1
+          if ($sln) {
+            msbuild "$($sln.FullName)" /t:Restore /p:RestorePackages=true /m /v:m
+          } else {
+            Write-Host "No solution file found. Skipping MSBuild Restore."
+          }
+        shell: pwsh
+
+      - name: Build project or solution
+        run: |
+          $sln = Get-ChildItem -Path . -Recurse -Filter *.sln | Select-Object -First 1
+          if ($sln) {
+            msbuild "$($sln.FullName)" /t:Build /p:Configuration=Release /m /v:m
+          } else {
+            $csproj = Get-ChildItem -Path . -Recurse -Filter *.csproj | Select-Object -First 1
+            if ($csproj) {
+              msbuild "$($csproj.FullName)" /t:Build /p:Configuration=Release /m /v:m
+            } else {
+              Write-Error "No .sln or .csproj found to build."
+            }
+          }
+        shell: pwsh
+
+      - name: Upload build artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Build-Output
+          path: |
+            **/bin/Release/
+            **/bin/x64/Release/
+            **/bin/x86/Release/
+          if-no-files-found: warn
